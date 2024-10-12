@@ -10,35 +10,76 @@ router.post("/advancestrategy", async (req, res) => {
     const db = req.app.locals.db; 
     const collection = db.collection('advancestrategy'); 
     const strategy = req.body;
-    checkLegsValidation(strategy,res)
-    const result = await collection.insertOne(strategy); // MongoDB में डॉक्यूमेंट इंसर्ट करें
-    // return sendResponse(res,200,"sucess",result,true)
+    const { isValid, message } = checkLegsValidation(strategy);
+    if (!isValid) return sendResponse(res, 400, message, null, false);
+    
+     const result = await collection.insertOne(strategy); // MongoDB में डॉक्यूमेंट इंसर्ट करें
+
+
+    return sendResponse(res,200,"sucess",result,true)
     }catch(error){
         return sendResponse(res,500,error.message,null,false)
 
     }
 });
 
-router.put('/updateadvancestrategy',async(req,res)=>{
-    try{
-        const db = req.app.locals.db; 
-        const collection = db.collection('advancestrategy'); 
+router.put('/updateadvancestrategy', async (req, res) => {
+    try {
+        const db = req.app.locals.db;
+        const collection = db.collection('advancestrategy');
         const strategy = req.body;
-        checkLegsValidation(strategy,res)
-        // if(strategy.strategyName){
-        //     return sendResponse(res,400,"strategyName is not found in body",null,false)
-        // }
+
+        const { isValid, message } = checkLegsValidation(strategy);
+        if (!isValid) return sendResponse(res, 400, message, null, false);
+
+        const existingStrategy = await collection.findOne({ strategyName: strategy.strategyName });
+
+        if (!existingStrategy) {
+            return sendResponse(res, 404, "Strategy not found", null, false);
+        }
+
+        const fieldsToSet = {};
+        const fieldsToUnset = {};
+
+        for (const key in strategy) {
+            if (JSON.stringify(strategy[key]) !== JSON.stringify(existingStrategy[key])) {
+                fieldsToSet[key] = strategy[key];
+            }
+        }
+
+        for (const key in existingStrategy) {
+            if (!(key in strategy) && key !== '_id') { // Ignore _id field
+                fieldsToUnset[key] = "";
+            }
+        }
+
+        const updateQuery = {};
+        if (Object.keys(fieldsToSet).length > 0) updateQuery.$set = fieldsToSet;
+        if (Object.keys(fieldsToUnset).length > 0) updateQuery.$unset = fieldsToUnset;
+
+        // console.log("Update Query:", updateQuery);
+        if (Object.keys(updateQuery).length === 0) {
+            return sendResponse(res, 400, "Nothing to update", null, false);
+        }
+
         const result = await collection.updateOne(
             { strategyName: strategy.strategyName },
-            { $set: strategy }
-            
-        ); 
-        // return sendResponse(res,200,"sucess",result,true)
-        }catch(error){
-            return sendResponse(res,500,error.message,null,false)
-    
+            updateQuery
+        );
+
+        if (result.modifiedCount === 0) {
+            return sendResponse(res, 400, "No data updated. Provide correct details.", null, false);
         }
-})
+
+        return sendResponse(res, 200, "Success", result, true);
+    } catch (error) {
+        // console.error("Error:", error);
+        return sendResponse(res, 500, error.message, null, false);
+    }
+});
+
+
+
 
 router.post('/getoneadvancestrategy',async(req,res)=>{
     try{
