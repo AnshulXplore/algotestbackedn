@@ -42,14 +42,20 @@ router.put('/updateadvancestrategy', async (req, res) => {
         const fieldsToUnset = {};
 
         for (const key in strategy) {
-            if (JSON.stringify(strategy[key]) !== JSON.stringify(existingStrategy[key])) {
+            if (key in existingStrategy) {
                 fieldsToSet[key] = strategy[key];
+                // console.log("addd1")
+            }
+            else{
+                fieldsToSet[key] = strategy[key];
+                console.log("addelse")
             }
         }
 
         for (const key in existingStrategy) {
             if (!(key in strategy) && key !== '_id') { // Ignore _id field
                 fieldsToUnset[key] = "";
+                console.log("remove")
             }
         }
 
