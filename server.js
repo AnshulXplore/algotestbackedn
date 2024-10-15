@@ -8,19 +8,19 @@ const createLegs = require('./controller/legs/simplelegController');
 // MongoDB connection setup
 (async () => {
     try {
-        // MongoDB से कनेक्ट करें
-        const db = await connectMongo(); // सही नाम 'connectMongo'
-        app.locals.db = db; // कनेक्शन को app.locals में स्टोर करें
+        
+        const db = await connectMongo(); 
+        app.locals.db = db; 
 
         // Middlewares and Routes setup
-        app.use(express.json()); // JSON body को parse करेगा
+        app.use(express.json()); 
 
         // API Routes
         app.use('/api', createStrategy);
         app.use('/api', createLegs);
         app.use('/api', createAdvanceStrategy);
 
-        // Server शुरू करें
+        
         app.listen(3000, () => {
             console.log("Server started successfully on port 3000");
         });

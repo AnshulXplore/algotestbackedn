@@ -13,7 +13,7 @@ router.post("/advancestrategy", async (req, res) => {
     const { isValid, message } = checkLegsValidation(strategy);
     if (!isValid) return sendResponse(res, 400, message, null, false);
     
-     const result = await collection.insertOne(strategy); // MongoDB में डॉक्यूमेंट इंसर्ट करें
+     const result = await collection.insertOne(strategy); 
 
 
     return sendResponse(res,200,"sucess",result,true)
