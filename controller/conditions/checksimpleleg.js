@@ -44,6 +44,8 @@ function checkvalidation(strategy) {
   if(isTimeOutsideRange(strategy.exitTime)){
     return { isValid: false, message: "exitTime range is not valid!" }; 
   }
+  if(!strategy.legs) return { isValid: false, message: "atleast one legs is required" };
+
   for (const e of strategy.legs) {
     if (!e.lots || e.lots <= 0)
       return {isValid: false,message: "please provide a valid number of lots!"};

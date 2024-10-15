@@ -29,12 +29,13 @@ function isTimeOutsideRange(inputTime) {
       function checkvalidation(strategy) {
         if (!strategy.user) return { isValid: false, message: "user is required" };
         if (!strategy.strategyName) return { isValid: false, message: "strategyName is required" };
-        if (!strategy.INDEX) return { isValid: false, message: "INDEX is required" };
+        if (!strategy.index) return { isValid: false, message: "INDEX is required" };
         if (!strategy.strategyType) return { isValid: false, message: "strategyType is required" };
         if (!strategy.entryTime) return { isValid: false, message: "entryTime is required" };
         if (!strategy.exitTime) return { isValid: false, message: "exitTime is required" };
         if (!strategy.backtest_startdate) return { isValid: false, message: "backtest_startdate is required" };
         if (!strategy.backtest_endDate) return { isValid: false, message: "backtest_endDate is required" };
+        if(!strategy.legs) return { isValid: false, message: "atleast one legs is required" };
     
         if (isTimeOutsideRange(strategy.entryTime)) 
             return { isValid: false, message: "entryTime is not Valid" };

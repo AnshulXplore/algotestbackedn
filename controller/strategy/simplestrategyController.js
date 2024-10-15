@@ -7,7 +7,7 @@ const sendResponse = require("../helper/helper"); // THIS IS A HELPER FUNCTION F
 const advance=require('../../schema/advanceStartegyBuilder');
 const checkLegsValidation=require('../conditions/checksimpleleg')
 
-// 1:- CREATE STRATEGY ROUTE
+// 1:- CREATE STRATEGY ROUTE :-
 router.post("/createSimpleStrategy", async (req, res) => {
   try{
     const db = req.app.locals.db; 
@@ -118,7 +118,6 @@ router.delete("/deleteSimpleStrategy", async (req, res) => {
 });
 
 // 4:- GET ALL STRATEGY OF A PARTICULAR USER:-
-
 router.get("/getSimpleStrategy", async (req, res) => {
   try {
     const db = req.app.locals.db; 
@@ -156,10 +155,4 @@ router.post("/getOneSimpleStrategy", async (req, res) => {
     return sendResponse(res, 500, error.message, null, false);
   }
 });
-
-// router.post('/advance',async(req,res)=>{
-//   let findadvamce=await advance.find();
-//   return res.json(findadvamce)
-// })
-
 module.exports = router;

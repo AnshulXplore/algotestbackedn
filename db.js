@@ -6,7 +6,7 @@ let dbConnection;
 
 const connectToMongo = async () => {
     if (dbConnection) {
-        return dbConnection; // अगर कनेक्शन पहले से है, तो वही रिटर्न करें
+        return dbConnection; 
     }
 
     const client = new MongoClient(URL);
@@ -15,7 +15,7 @@ const connectToMongo = async () => {
         await client.connect();
         console.log("Connected successfully to MongoDB");
 
-        dbConnection = client.db(dbName); // डेटाबेस कनेक्शन सेट करें
+        dbConnection = client.db(dbName); 
         return dbConnection;
 
     } catch (error) {

@@ -4,7 +4,7 @@ const sendResponse=require('../helper/helper')
 const checkLegsValidation=require('../conditions/checkadvanceleg');
 
 
-// Route to create a new advance strategy
+//1:- CREATE THE ADVANCE STRATEGY ROUTE :-
 router.post("/advancestrategy", async (req, res) => {
     try{
     const db = req.app.locals.db; 
@@ -23,6 +23,7 @@ router.post("/advancestrategy", async (req, res) => {
     }
 });
 
+// 2:- UPDATE THE ADVANCE STRATEGY ROUTE :-
 router.put('/updateadvancestrategy', async (req, res) => {
     try {
         const db = req.app.locals.db;
@@ -84,9 +85,7 @@ router.put('/updateadvancestrategy', async (req, res) => {
     }
 });
 
-
-
-
+//3:-GET ONE ADVANCE STRATEGY ROUTE :-
 router.post('/getoneadvancestrategy',async(req,res)=>{
     try{
     const db = req.app.locals.db; 
@@ -105,6 +104,7 @@ router.post('/getoneadvancestrategy',async(req,res)=>{
     }
 })
 
+//4:- GET ALL ADVANCE ROUTE GET:-
 router.post('/getalladvancestrategy',async(req,res)=>{
     try{
     const db = req.app.locals.db; 
@@ -122,7 +122,7 @@ router.post('/getalladvancestrategy',async(req,res)=>{
         return sendResponse(res,500,error.message,null,false)
     }
 })
-
+// 5:- DELETE ADVANCE STARTEGY ROUTE:-
 router.delete('/deleteadvancestrategy',async(req,res)=>{
     try{
     const db = req.app.locals.db; 
