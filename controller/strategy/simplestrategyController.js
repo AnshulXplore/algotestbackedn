@@ -22,7 +22,7 @@ router.post("/createSimpleStrategy",fetchUser, async (req, res) => {
 
     // find strategy for avoid duplicate strategy name.
     let strategyName=strategy.strategyName;
-    const findStartegy = await collection.findOne({strategyName:strategyName});
+    const findStartegy = await collection.findOne({strategyName:strategyName,user:userId});
 
     if(findStartegy){
         return sendResponse(res,400,"please select a unique name",null,false);
@@ -39,12 +39,14 @@ router.post("/createSimpleStrategy",fetchUser, async (req, res) => {
 //2:-UPDATE STRATEGY ROUTE :-
 router.put("/updateSimpleStrategy",fetchUser,async (req, res) => {
   try {
+    let userId=req.userData.userId;
+
     const db = req.app.locals.db; 
     const collection = db.collection('simpleStrategy'); 
     let strategy=req.body;
     const { isValid, message } = checkLegsValidation(strategy);
         if (!isValid) return sendResponse(res, 400, message, null, false);
-        const existingStrategy = await collection.findOne({ strategyName: strategy.strategyName });
+        const existingStrategy = await collection.findOne({ strategyName: strategy.strategyName,user:userId});
 
         if (!existingStrategy) {
             return sendResponse(res, 404, "Strategy not found", null, false);
@@ -81,7 +83,7 @@ router.put("/updateSimpleStrategy",fetchUser,async (req, res) => {
         }
 
         const result = await collection.updateOne(
-            { strategyName: strategy.strategyName },
+            { strategyName: strategy.strategyName,user:userId },
             updateQuery
         );
 

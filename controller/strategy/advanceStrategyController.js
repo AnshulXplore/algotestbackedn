@@ -30,6 +30,7 @@ router.post("/advancestrategy",fetchUser,async (req, res) => {
 // 2:- UPDATE THE ADVANCE STRATEGY ROUTE :-
 router.put('/updateadvancestrategy',fetchUser,async (req, res) => {
     try {
+        let userId=req.userData.userId;
         const db = req.app.locals.db;
         const collection = db.collection('advancestrategy');
         const strategy = req.body;
@@ -37,7 +38,7 @@ router.put('/updateadvancestrategy',fetchUser,async (req, res) => {
         const { isValid, message } = checkLegsValidation(strategy);
         if (!isValid) return sendResponse(res, 400, message, null, false);
 
-        const existingStrategy = await collection.findOne({ strategyName: strategy.strategyName });
+        const existingStrategy = await collection.findOne({ strategyName: strategy.strategyName,user:userId });
 
         if (!existingStrategy) {
             return sendResponse(res, 404, "Strategy not found", null, false);
@@ -74,7 +75,7 @@ router.put('/updateadvancestrategy',fetchUser,async (req, res) => {
         }
 
         const result = await collection.updateOne(
-            { strategyName: strategy.strategyName },
+            { strategyName: strategy.strategyName,user:userId },
             updateQuery
         );
 
@@ -98,7 +99,7 @@ router.post('/getoneadvancestrategy',fetchUser,async(req,res)=>{
     if(!strategyName){
         return sendResponse(res,400,"please provide strategyName",null,false);
     }
-    const result = await collection.findOne({strategyName:strategyName});
+    const result = await collection.findOne({strategyName:strategyName,user:userId});
     
     if(!result){
         return sendResponse(res,400,"Strategy not found",null,false);
@@ -136,7 +137,7 @@ router.delete('/deleteadvancestrategy',fetchUser,async(req,res)=>{
     if(!strategyName){
         return sendResponse(res,400,"please provide strategyName",null,false);
     }
-    const result = await collection.deleteOne({strategyName:strategyName});
+    const result = await collection.deleteOne({strategyName:strategyName,user:userId});
     if(result.deletedCount===0){
         return sendResponse(res,400,"Strategy not found",null,false);
     }
