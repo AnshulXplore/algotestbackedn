@@ -35,9 +35,7 @@ function checkvalidation(strategy) {
   if (!strategy.exitTime) {
     return { isValid: false, message: "exitTime is required!" };
   }
-  if (!strategy.user) {
-    return { isValid: false, message: "User is required!" };
-  }
+  
   if(isTimeOutsideRange(strategy.entryTime)){
     return { isValid: false, message: "entryTime range is not valid!" }; 
   }

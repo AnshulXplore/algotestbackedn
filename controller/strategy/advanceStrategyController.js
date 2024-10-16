@@ -2,16 +2,20 @@ const express = require("express");
 const router = express.Router();
 const sendResponse=require('../helper/helper')
 const checkLegsValidation=require('../conditions/checkadvanceleg');
-
+const fetchUser=require('../../middleware/fetchUser')
 
 //1:- CREATE THE ADVANCE STRATEGY ROUTE :-
-router.post("/advancestrategy", async (req, res) => {
+router.post("/advancestrategy",fetchUser,async (req, res) => {
     try{
+    let userId=req.userData.userId;
+
     const db = req.app.locals.db; 
     const collection = db.collection('advancestrategy'); 
     const strategy = req.body;
+
     const { isValid, message } = checkLegsValidation(strategy);
     if (!isValid) return sendResponse(res, 400, message, null, false);
+    strategy.user=userId
     
      const result = await collection.insertOne(strategy); 
 
@@ -24,7 +28,7 @@ router.post("/advancestrategy", async (req, res) => {
 });
 
 // 2:- UPDATE THE ADVANCE STRATEGY ROUTE :-
-router.put('/updateadvancestrategy', async (req, res) => {
+router.put('/updateadvancestrategy',fetchUser,async (req, res) => {
     try {
         const db = req.app.locals.db;
         const collection = db.collection('advancestrategy');
@@ -86,7 +90,7 @@ router.put('/updateadvancestrategy', async (req, res) => {
 });
 
 //3:-GET ONE ADVANCE STRATEGY ROUTE :-
-router.post('/getoneadvancestrategy',async(req,res)=>{
+router.post('/getoneadvancestrategy',fetchUser,async(req,res)=>{
     try{
     const db = req.app.locals.db; 
     const collection = db.collection('advancestrategy');
@@ -95,6 +99,7 @@ router.post('/getoneadvancestrategy',async(req,res)=>{
         return sendResponse(res,400,"please provide strategyName",null,false);
     }
     const result = await collection.findOne({strategyName:strategyName});
+    
     if(!result){
         return sendResponse(res,400,"Strategy not found",null,false);
     }
@@ -105,11 +110,11 @@ router.post('/getoneadvancestrategy',async(req,res)=>{
 })
 
 //4:- GET ALL ADVANCE ROUTE GET:-
-router.post('/getalladvancestrategy',async(req,res)=>{
+router.post('/getalladvancestrategy',fetchUser,async(req,res)=>{
     try{
     const db = req.app.locals.db; 
     const collection = db.collection('advancestrategy');
-    const { userId } = req.body;
+    let userId=req.userData.userId;
     if(!userId){
         return sendResponse(res,400,"please provide userId",null,false);
     }
@@ -123,7 +128,7 @@ router.post('/getalladvancestrategy',async(req,res)=>{
     }
 })
 // 5:- DELETE ADVANCE STARTEGY ROUTE:-
-router.delete('/deleteadvancestrategy',async(req,res)=>{
+router.delete('/deleteadvancestrategy',fetchUser,async(req,res)=>{
     try{
     const db = req.app.locals.db; 
     const collection = db.collection('advancestrategy');

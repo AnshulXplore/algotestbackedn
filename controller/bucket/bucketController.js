@@ -3,12 +3,12 @@ const express = require("express");
 const router = express.Router();
 const sendResponse = require('../helper/helper');
 const {  ObjectId } = require('mongodb');
+const fetchUser=require('../../middleware/fetchUser')
 
 //1:- CREATE THE BUCKET ROUTE :-
-router.post("/createBucket", async (req, res) => {
+router.post("/createBucket",fetchUser, async (req, res) => {
     try {
-
-        // DATE FUNCTION 
+        let userId=req.userData.userId;
         function getDates() {
             const today = new Date(); // Aaj ki date
             const lastYear = new Date(); 
@@ -42,7 +42,7 @@ router.post("/createBucket", async (req, res) => {
             return sendResponse(res, 400, "Please select at least one strategy to create the bucket", null, false);
         }
         // jwt token
-        let user="6510c7a0f64a3b0021d45c11"
+        
 
         // CHECK THE UNIQUE NAME FOR THE BUCKET :-
         let findBucket=await Bucket.findOne({bucketName:bucket.bucketName})
@@ -79,7 +79,7 @@ router.post("/createBucket", async (req, res) => {
             })),
             endDate: startDate,
             startDate: endDate,
-            user:user
+            user:userId
         };
 
         
@@ -93,55 +93,28 @@ router.post("/createBucket", async (req, res) => {
 });
 
 // 2:- UPDATE THE BUCKET ROUTES:-
-router.put('/updateBucket', async (req, res) => {
+router.put('/updateBucket',fetchUser,async (req, res) => {
     try {
+        let userId=req.userData.userId;
+
         const db = req.app.locals.db;
         const Bucket = db.collection('bucket');
         const simpleStrategy = db.collection('simpleStrategy');
         const advanceStrategy = db.collection('advancestrategy');
+        const  updatedBucket  = req.body;
+        if(!updatedBucket.bucketName){
+            return sendResponse(res,400,"bucketName is required",null,false)
+        }
+        if(updatedBucket.strategyArray.length<=0){
+            return sendResponse(res, 400, "Please select at least one strategy to create the bucket", null, false);
+        }
         
-        const { bucketName, strategyArray, endDate, startDate } = req.body;
-        const user = "6510c7a0f64a3b0021d45c11"; // JWT token placeholder
-        
-        let updatedBucket = {};
+
 
         // Asynchronous mapping with Promise.all
-        if (strategyArray) {
-            const updatedStrategies = await Promise.all(
-                strategyArray.map(async (e, index) => {
-                    let indexName = null;
-                    let strategyName = null;
-                    
-                    // Find strategy in simple or advance strategy collections
-                    let findStrategy = await simpleStrategy.findOne({ _id: new ObjectId(e) });
-                    if (!findStrategy) {
-                        findStrategy = await advanceStrategy.findOne({ _id: new ObjectId(e) });
-                    }
-
-                    if (findStrategy) {
-                        indexName = findStrategy.index;
-                        strategyName = findStrategy.strategyName;
-                    }
-
-                    // Return the transformed strategy object
-                    return {
-                        strategyId: e,
-                        weekends: { Mon: true, Tue: true, WED: true, THU: true, FRI: true },
-                        multiplier: 1,
-                        Index: indexName,
-                        strategyName: strategyName
-                    };
-                })
-            );
-            updatedBucket.strategyArray = updatedStrategies;
-        }
-
-        if (endDate) updatedBucket.endDate = endDate;
-        if (startDate) updatedBucket.startDate = startDate;
-
         // Perform the update operation
         const updateResult = await Bucket.updateOne(
-            { bucketName: bucketName }, // Filter
+            { bucketName: updatedBucket.bucketName,user:userId}, // Filter
             { $set: updatedBucket } // Updated fields
         );
 
@@ -156,18 +129,18 @@ router.put('/updateBucket', async (req, res) => {
 });
 
 //3:- DELETE BUCKET ROUTE :-
-router.delete('/deleteBucket',async(req,res) => {
+router.delete('/deleteBucket',fetchUser,async(req,res) => {
     try{
+        let userId=req.userData.userId;
     const db = req.app.locals.db; 
     const Bucket = db.collection('bucket');
     let {bucketName}=req.body;
     if(!bucketName){
        return sendResponse(res,400,"please provide bucketName",null,false)
     }
-    // jwt token
-    let user="6510c7a0f64a3b0021d45c11";
+    
 
-    let deletebucket=await Bucket.deleteOne({bucketName:bucketName,user:user})
+    let deletebucket=await Bucket.deleteOne({bucketName:bucketName,user:userId})
     console.log(deletebucket)
     if(deletebucket.deletedCount===0){
         return sendResponse(res,400,"Strategy not found",null,false);
@@ -180,15 +153,17 @@ router.delete('/deleteBucket',async(req,res) => {
 })
 
 // 4:- GET ALL BUCKETS ROUTE :-
-router.post('/getBucket',async(req,res) => {
+router.post('/getBucket',fetchUser,async(req,res) => {
     try {
+        let userId=req.userData.userId;
         const db = req.app.locals.db; 
     const Bucket = db.collection('bucket');
     let user="6510c7a0f64a3b0021d45c11";
-    let findBucket=await Bucket.find({user:user}).toArray()
+    let findBucket=await Bucket.find({user:userId}).toArray()
     if(findBucket.length<=0){
         return sendResponse(res,200,"no bucket found",null,false)
     }
+    
     return sendResponse(res,200,"bucket fetch succesfully",findBucket,true)
 
     } catch (error) {

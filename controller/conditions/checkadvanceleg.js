@@ -27,7 +27,7 @@ function isTimeOutsideRange(inputTime) {
         return typeof param ==='string'
       }
       function checkvalidation(strategy) {
-        if (!strategy.user) return { isValid: false, message: "user is required" };
+        if (strategy.user) return { isValid: false, message: "user is required" };
         if (!strategy.strategyName) return { isValid: false, message: "strategyName is required" };
         if (!strategy.index) return { isValid: false, message: "INDEX is required" };
         if (!strategy.strategyType) return { isValid: false, message: "strategyType is required" };

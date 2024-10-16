@@ -5,6 +5,12 @@ const createStrategy = require('./controller/strategy/simplestrategyController')
 const createAdvanceStrategy = require('./controller/strategy/advanceStrategyController');
 const createLegs = require('./controller/legs/simplelegController');
 const bucketController = require('./controller/bucket/bucketController'); // Ensure this file exports a router
+const auth=require('./controller/auth/authentiocation')
+
+app.use((err, req, res, next) => {
+    console.error(err.stack); // पूरी त्रुटि स्टैक को लॉग करें
+    res.status(500).send('Something broke!');
+});
 
 // MongoDB connection setup
 (async () => {
@@ -20,6 +26,7 @@ const bucketController = require('./controller/bucket/bucketController'); // Ens
         app.use('/api', createLegs);
         app.use('/api', createAdvanceStrategy);
         app.use('/api', bucketController); // Ensure bucketController is included
+        app.use('/api',auth)
 
         app.listen(3000, () => {
             console.log("Server started successfully on port 3000");

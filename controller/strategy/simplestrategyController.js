@@ -6,10 +6,13 @@ const router = express.Router();
 const sendResponse = require("../helper/helper"); // THIS IS A HELPER FUNCTION FOR RETURN A RESPONSE AND ERROR.
 const advance=require('../../schema/advanceStartegyBuilder');
 const checkLegsValidation=require('../conditions/checksimpleleg')
+const fetchUser=require('../../middleware/fetchUser')
 
 // 1:- CREATE STRATEGY ROUTE :-
-router.post("/createSimpleStrategy", async (req, res) => {
+router.post("/createSimpleStrategy",fetchUser, async (req, res) => {
   try{
+    let userId=req.userData.userId;
+
     const db = req.app.locals.db; 
     const collection = db.collection('simpleStrategy'); 
     const strategy = req.body;
@@ -24,7 +27,7 @@ router.post("/createSimpleStrategy", async (req, res) => {
     if(findStartegy){
         return sendResponse(res,400,"please select a unique name",null,false);
     }
-    
+    strategy.user=userId;
      const result = await collection.insertOne(strategy); 
      return sendResponse(res,200,"sucess",result,true)
     }catch(error){
@@ -34,7 +37,7 @@ router.post("/createSimpleStrategy", async (req, res) => {
 });
 
 //2:-UPDATE STRATEGY ROUTE :-
-router.put("/updateSimpleStrategy", async (req, res) => {
+router.put("/updateSimpleStrategy",fetchUser,async (req, res) => {
   try {
     const db = req.app.locals.db; 
     const collection = db.collection('simpleStrategy'); 
@@ -93,7 +96,7 @@ router.put("/updateSimpleStrategy", async (req, res) => {
 });
 
 //3:-DELETE STRATEGY ROUTE:-
-router.delete("/deleteSimpleStrategy", async (req, res) => {
+router.delete("/deleteSimpleStrategy",fetchUser,async (req, res) => {
   try {
     const db = req.app.locals.db; 
     const collection = db.collection('simpleStrategy'); 
@@ -118,13 +121,11 @@ router.delete("/deleteSimpleStrategy", async (req, res) => {
 });
 
 // 4:- GET ALL STRATEGY OF A PARTICULAR USER:-
-router.get("/getSimpleStrategy", async (req, res) => {
+router.get("/getSimpleStrategy",fetchUser,async (req, res) => {
   try {
+    let userId=req.userData.userId;
     const db = req.app.locals.db; 
     const collection = db.collection('simpleStrategy'); 
-    //take by jwttoken
-    let userId = "6510c7a0f64a3b0021d45c11";
-
     let findAllStrategy = await collection.find({ user: userId }).toArray();
     if (!findAllStrategy) {
       return sendResponse(res, 400, "No Strategy Found", null, false);
@@ -136,7 +137,7 @@ router.get("/getSimpleStrategy", async (req, res) => {
 });
 
 // 5:- FIND A SINGLE STRATEGY:-
-router.post("/getOneSimpleStrategy", async (req, res) => {
+router.post("/getOneSimpleStrategy",fetchUser, async (req, res) => {
   try {
     const db = req.app.locals.db; 
     const collection = db.collection('simpleStrategy'); 
