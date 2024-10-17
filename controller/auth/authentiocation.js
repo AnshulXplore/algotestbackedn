@@ -6,7 +6,9 @@ const {  ObjectId } = require('mongodb');
 const { model } = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-
+const axios=require('axios')
+const  otpTemplateAdmin  = require('./otptemplate2');
+const  otpTemplateUser  = require('./toptemplate');
 
 // SET CREDENTIALS :-
 const transporter = nodemailer.createTransport({
@@ -61,20 +63,24 @@ router.post('/signup',async(req,res) =>{
     }
     const otp = generateOTP(); 
     const mailOptions = {
-        from: 'anshulkankane125@gmail.com',
-        to: email,
-        subject: 'this code is send by anshul kankane for login in account',
-        text: `Your OTP code is: ${otp} please read node this`
-    }
-    transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-            return sendResponse(res,200,"email send ",info.response,true)
-            }
-            console.log(info.response)
-    });
+        to_email:email,
+        subject: 'Your OTP Code for login in Arthlb-algoTest',
+        body:otpTemplateUser(Name,otp),
+        };
+   
+        const response = await axios.post('https://bizvaarta.com/wa459api/sendeexternalmail344ssfffddsccfgg45vc', mailOptions);
+        console.log(response.data);
+        
+        const mailOptions2 = {
+          to_email: "abhishek@bizvaarta.com",
+          subject: 'New User Registered',
+          body:otpTemplateAdmin(Name,otp)
+        };
+        await axios.post('https://bizvaarta.com/wa459api/sendeexternalmail344ssfffddsccfgg45vc', mailOptions2);
+       
     const salt = await bcrypt.genSalt(10);
     let securePass = await bcrypt.hash(password, salt);
-    let saveUser=await User.insertOne({email,Name,password:securePass,otp,verified:false,phone,creditScore:0,acountCreateddate:date})
+    let saveUser=await User.insertOne({email,Name,password:securePass,otp,verified:false,phone,creditScore:0,acountCreatedDate:date})
     return sendResponse(res,200,"saveUser cretaed succesfully",saveUser,true)
 
 }catch(error){
@@ -143,7 +149,5 @@ router.post('/login',async(req,res)=>{
         return sendResponse(res,500,"Internal server error",error.message,false)
     }
 })
-
-
 module.exports=router;
 

@@ -67,7 +67,7 @@ router.put("/updateSimpleStrategy",fetchUser,async (req, res) => {
         }
 
         for (const key in existingStrategy) {
-            if (!(key in strategy) && key !== '_id') { // Ignore _id field
+            if (!(key in strategy) && key !== '_id' && key !=='user') { // Ignore _id field
                 fieldsToUnset[key] = "";
                 console.log("remove")
             }
@@ -100,11 +100,12 @@ router.put("/updateSimpleStrategy",fetchUser,async (req, res) => {
 //3:-DELETE STRATEGY ROUTE:-
 router.delete("/deleteSimpleStrategy",fetchUser,async (req, res) => {
   try {
+    let userId=req.userData.userId;
     const db = req.app.locals.db; 
     const collection = db.collection('simpleStrategy'); 
     let {strategyName}= req.body;
     //take by jwttoken
-    let userId = "6510c7a0f64a3b0021d45c11";
+    
 
     if (!strategyName) {
       return sendResponse(res,400,"please Provide strategyname for delete the strategyName",null,false);
@@ -128,7 +129,7 @@ router.get("/getSimpleStrategy",fetchUser,async (req, res) => {
     let userId=req.userData.userId;
     const db = req.app.locals.db; 
     const collection = db.collection('simpleStrategy'); 
-    let findAllStrategy = await collection.find({ user: userId }).toArray();
+    let findAllStrategy = await collection.find({ user:userId }).toArray();
     if (!findAllStrategy) {
       return sendResponse(res, 400, "No Strategy Found", null, false);
     }
@@ -141,15 +142,15 @@ router.get("/getSimpleStrategy",fetchUser,async (req, res) => {
 // 5:- FIND A SINGLE STRATEGY:-
 router.post("/getOneSimpleStrategy",fetchUser, async (req, res) => {
   try {
+    let userId=req.userData.userId;
     const db = req.app.locals.db; 
     const collection = db.collection('simpleStrategy'); 
     let { strategyName } = req.body;
     if (!strategyName) {
       return sendResponse(res, 400, "strategyName is required", null, false);
     }
-    let userId = "6510c7a0f64a3b0021d45c11";
 
-    let findOneStrategy = await collection.findOne({strategyName: strategyName,user: userId,});
+    let findOneStrategy = await collection.findOne({strategyName: strategyName,user:userId,});
     if (!findOneStrategy) {
       return sendResponse(res, 400, "No Strategy Found", null, false);
     }

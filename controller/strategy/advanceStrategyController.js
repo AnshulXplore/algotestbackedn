@@ -13,6 +13,13 @@ router.post("/advancestrategy",fetchUser,async (req, res) => {
     const collection = db.collection('advancestrategy'); 
     const strategy = req.body;
 
+    let findStartegy=await collection.findOne({strategyName:strategy.strategyName,user:userId})
+
+    if(findStartegy){
+        return sendResponse(res,400,"please select a unique name ",null,false)
+    }
+
+
     const { isValid, message } = checkLegsValidation(strategy);
     if (!isValid) return sendResponse(res, 400, message, null, false);
     strategy.user=userId
@@ -59,7 +66,7 @@ router.put('/updateadvancestrategy',fetchUser,async (req, res) => {
         }
 
         for (const key in existingStrategy) {
-            if (!(key in strategy) && key !== '_id') { // Ignore _id field
+            if (!(key in strategy) && key !== '_id' && key !=='user') { // Ignore _id field
                 fieldsToUnset[key] = "";
                 console.log("remove")
             }
@@ -93,6 +100,7 @@ router.put('/updateadvancestrategy',fetchUser,async (req, res) => {
 //3:-GET ONE ADVANCE STRATEGY ROUTE :-
 router.post('/getoneadvancestrategy',fetchUser,async(req,res)=>{
     try{
+        let userId=req.userData.userId;
     const db = req.app.locals.db; 
     const collection = db.collection('advancestrategy');
     const { strategyName } = req.body;
@@ -131,6 +139,7 @@ router.post('/getalladvancestrategy',fetchUser,async(req,res)=>{
 // 5:- DELETE ADVANCE STARTEGY ROUTE:-
 router.delete('/deleteadvancestrategy',fetchUser,async(req,res)=>{
     try{
+        let userId=req.userData.userId;
     const db = req.app.locals.db; 
     const collection = db.collection('advancestrategy');
     const { strategyName } = req.body;
