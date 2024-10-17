@@ -79,7 +79,8 @@ router.post("/createBucket",fetchUser, async (req, res) => {
             })),
             endDate: startDate,
             startDate: endDate,
-            user:userId
+            user:userId,
+            backtest:false
         };
 
         
@@ -108,6 +109,7 @@ router.put('/updateBucket',fetchUser,async (req, res) => {
         if(updatedBucket.strategyArray.length<=0){
             return sendResponse(res, 400, "Please select at least one strategy to create the bucket", null, false);
         }
+
         
 
 

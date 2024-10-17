@@ -27,7 +27,10 @@ router.post("/createSimpleStrategy",fetchUser, async (req, res) => {
     if(findStartegy){
         return sendResponse(res,400,"please select a unique name",null,false);
     }
+    
+    // enter more fields from backend:-
     strategy.user=userId;
+    strategy.backtest=false;
      const result = await collection.insertOne(strategy); 
      return sendResponse(res,200,"sucess",result,true)
     }catch(error){
@@ -67,7 +70,7 @@ router.put("/updateSimpleStrategy",fetchUser,async (req, res) => {
         }
 
         for (const key in existingStrategy) {
-            if (!(key in strategy) && key !== '_id' && key !=='user') { // Ignore _id field
+            if (!(key in strategy) && key !== '_id' && key !=='user' && key !== 'backtest') { // Ignore these all field
                 fieldsToUnset[key] = "";
                 console.log("remove")
             }

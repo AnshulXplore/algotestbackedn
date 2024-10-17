@@ -22,8 +22,12 @@ router.post("/advancestrategy",fetchUser,async (req, res) => {
 
     const { isValid, message } = checkLegsValidation(strategy);
     if (!isValid) return sendResponse(res, 400, message, null, false);
+
+    // more fields that enter from backend:-
     strategy.user=userId
+    strategy.backtest=false
     
+    // insert reasult in db with schema les aproach:-
      const result = await collection.insertOne(strategy); 
 
 
@@ -66,7 +70,7 @@ router.put('/updateadvancestrategy',fetchUser,async (req, res) => {
         }
 
         for (const key in existingStrategy) {
-            if (!(key in strategy) && key !== '_id' && key !=='user') { // Ignore _id field
+            if (!(key in strategy) && key !== '_id' && key !=='user' && key !=='backtest') { // Ignore these fields
                 fieldsToUnset[key] = "";
                 console.log("remove")
             }

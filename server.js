@@ -6,6 +6,7 @@ const createAdvanceStrategy = require('./controller/strategy/advanceStrategyCont
 const createLegs = require('./controller/legs/simplelegController');
 const bucketController = require('./controller/bucket/bucketController'); // Ensure this file exports a router
 const auth=require('./controller/auth/authentiocation')
+const backtestReasult=require('./controller/backtestreasult/strategyBacktest')
 
 app.use((err, req, res, next) => {
     console.error(err.stack); // पूरी त्रुटि स्टैक को लॉग करें
@@ -27,6 +28,7 @@ app.use((err, req, res, next) => {
         app.use('/api', createAdvanceStrategy);
         app.use('/api', bucketController); // Ensure bucketController is included
         app.use('/api',auth)
+        app.use('/api',backtestReasult)
 
         app.listen(3000, () => {
             console.log("Server started successfully on port 3000");
