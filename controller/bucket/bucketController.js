@@ -24,10 +24,8 @@ router.post("/createBucket",fetchUser, async (req, res) => {
                 lastYear: formatDate(lastYear),
             };
         }
-        
         const startDate=getDates().today
         const endDate=getDates().lastYear;
-        
         // DB AND COLLECTION SETUP :-
         const db = req.app.locals.db; 
         const Bucket = db.collection('bucket');
@@ -41,9 +39,6 @@ router.post("/createBucket",fetchUser, async (req, res) => {
         if (!bucket.strategyArray || bucket.strategyArray.length<=0) {
             return sendResponse(res, 400, "Please select at least one strategy to create the bucket", null, false);
         }
-        // jwt token
-        
-
         // CHECK THE UNIQUE NAME FOR THE BUCKET :-
         let findBucket=await Bucket.findOne({bucketName:bucket.bucketName})
         if(findBucket){
@@ -82,12 +77,8 @@ router.post("/createBucket",fetchUser, async (req, res) => {
             user:userId,
             backtest:false
         };
-
-        
         let createBucket=await Bucket.insertOne(newbucket)
-
         return sendResponse(res,200,"bucket cretaed succesfully",createBucket,true)
-
     } catch (error) {
         return sendResponse(res, 500, error.message, null, false);
     }
@@ -97,7 +88,6 @@ router.post("/createBucket",fetchUser, async (req, res) => {
 router.put('/updateBucket',fetchUser,async (req, res) => {
     try {
         let userId=req.userData.userId;
-
         const db = req.app.locals.db;
         const Bucket = db.collection('bucket');
         const simpleStrategy = db.collection('simpleStrategy');
@@ -109,21 +99,15 @@ router.put('/updateBucket',fetchUser,async (req, res) => {
         if(updatedBucket.strategyArray.length<=0){
             return sendResponse(res, 400, "Please select at least one strategy to create the bucket", null, false);
         }
-
-        
-
-
         // Asynchronous mapping with Promise.all
         // Perform the update operation
         const updateResult = await Bucket.updateOne(
             { bucketName: updatedBucket.bucketName,user:userId}, // Filter
             { $set: updatedBucket } // Updated fields
         );
-
         if (updateResult.modifiedCount === 0) {
             return sendResponse(res, 400, "No data updated. Provide correct details.", null, false);
         }
-
         return sendResponse(res, 200, "Success", updateResult, true);
     } catch (error) {
         return sendResponse(res, 500, error.message, null, false);
@@ -134,21 +118,18 @@ router.put('/updateBucket',fetchUser,async (req, res) => {
 router.delete('/deleteBucket',fetchUser,async(req,res) => {
     try{
         let userId=req.userData.userId;
-    const db = req.app.locals.db; 
-    const Bucket = db.collection('bucket');
-    let {bucketName}=req.body;
-    if(!bucketName){
-       return sendResponse(res,400,"please provide bucketName",null,false)
-    }
-    
-
-    let deletebucket=await Bucket.deleteOne({bucketName:bucketName,user:userId})
-    console.log(deletebucket)
-    if(deletebucket.deletedCount===0){
-        return sendResponse(res,400,"Strategy not found",null,false);
-    }
-
-    return sendResponse(res,200,"bucket succesfully deleted",deletebucket,true)
+        const db = req.app.locals.db; 
+        const Bucket = db.collection('bucket');
+        let {bucketName}=req.body;
+        if(!bucketName){
+            return sendResponse(res,400,"please provide bucketName",null,false)
+        }
+        let deletebucket=await Bucket.deleteOne({bucketName:bucketName,user:userId})
+        console.log(deletebucket)
+        if(deletebucket.deletedCount===0){
+            return sendResponse(res,400,"Strategy not found",null,false);
+        }
+        return sendResponse(res,200,"bucket succesfully deleted",deletebucket,true)
     }catch(error){
         return sendResponse(res, 500, error.message, null, false);
     }
@@ -159,18 +140,15 @@ router.post('/getBucket',fetchUser,async(req,res) => {
     try {
         let userId=req.userData.userId;
         const db = req.app.locals.db; 
-    const Bucket = db.collection('bucket');
-    let user="6510c7a0f64a3b0021d45c11";
-    let findBucket=await Bucket.find({user:userId}).toArray()
-    if(findBucket.length<=0){
-        return sendResponse(res,200,"no bucket found",null,false)
-    }
-    
-    return sendResponse(res,200,"bucket fetch succesfully",findBucket,true)
-
+        const Bucket = db.collection('bucket');
+        let user="6510c7a0f64a3b0021d45c11";
+        let findBucket=await Bucket.find({user:userId}).toArray()
+        if(findBucket.length<=0){
+            return sendResponse(res,200,"no bucket found",null,false)
+        }
+        return sendResponse(res,200,"bucket fetch succesfully",findBucket,true)
     } catch (error) {
         return sendResponse(res, 500, error.message, null, false);
     }
-    
 })
 module.exports = router;  // Ensure you are exporting the router

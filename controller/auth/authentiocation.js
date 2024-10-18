@@ -43,49 +43,41 @@ router.post('/signup',async(req,res) =>{
           
             return `Date: ${date}, Time: ${time}`;
           }
-          
-          let date=getCurrentDateTime()
-          
-    const {email,Name,password,phone}=req.body;
-    const db = req.app.locals.db; 
-    const User = db.collection('User');
-
-    let findEmail=await User.findOne({email:email})
-    if(findEmail){
-        return sendResponse(res,400,"please select unique email",null,false)
+            let date=getCurrentDateTime()
+            const {email,Name,password,phone}=req.body;
+            const db = req.app.locals.db; 
+            const User = db.collection('User');
+            let findEmail=await User.findOne({email:email})
+            if(findEmail){
+                return sendResponse(res,400,"please select unique email",null,false)
+            }
+            if(!email || !Name || !password || !phone){
+                return sendResponse(res,400,"please fill al the fields",null,false)
+            }
+            if(typeof(phone)=="string" || phone.toString().length>10 || phone.toString().length<10){
+                return sendResponse(res,400,"please neter a valid phoneNumber",null,false)
+            }
+            const otp = generateOTP(); 
+            const mailOptions = {
+                to_email:email,
+                subject: 'Your OTP Code for login in Arthlb-algoTest',
+                body:otpTemplateUser(Name,otp),
+            };
+            const response = await axios.post('https://bizvaarta.com/wa459api/sendeexternalmail344ssfffddsccfgg45vc', mailOptions);
+            console.log(response.data);
+            const mailOptions2 = {
+                to_email: "abhishek@bizvaarta.com",
+                subject: 'New User Registered',
+                body:otpTemplateAdmin(Name,otp)
+            };
+            await axios.post('https://bizvaarta.com/wa459api/sendeexternalmail344ssfffddsccfgg45vc', mailOptions2);
+            const salt = await bcrypt.genSalt(10);
+            let securePass = await bcrypt.hash(password, salt);
+            let saveUser=await User.insertOne({email,Name,password:securePass,otp,verified:false,phone,creditScore:0,acountCreatedDate:date})
+            return sendResponse(res,200,"saveUser cretaed succesfully",saveUser,true)
+    }catch(error){
+        return sendResponse(res, 500, error.message, null, false);
     }
-
-    if(!email || !Name || !password || !phone){
-        return sendResponse(res,400,"please fill al the fields",null,false)
-    }
-    if(typeof(phone)=="string" || phone.toString().length>10 || phone.toString().length<10){
-        return sendResponse(res,400,"please neter a valid phoneNumber",null,false)
-    }
-    const otp = generateOTP(); 
-    const mailOptions = {
-        to_email:email,
-        subject: 'Your OTP Code for login in Arthlb-algoTest',
-        body:otpTemplateUser(Name,otp),
-        };
-   
-        const response = await axios.post('https://bizvaarta.com/wa459api/sendeexternalmail344ssfffddsccfgg45vc', mailOptions);
-        console.log(response.data);
-        
-        const mailOptions2 = {
-          to_email: "abhishek@bizvaarta.com",
-          subject: 'New User Registered',
-          body:otpTemplateAdmin(Name,otp)
-        };
-        await axios.post('https://bizvaarta.com/wa459api/sendeexternalmail344ssfffddsccfgg45vc', mailOptions2);
-       
-    const salt = await bcrypt.genSalt(10);
-    let securePass = await bcrypt.hash(password, salt);
-    let saveUser=await User.insertOne({email,Name,password:securePass,otp,verified:false,phone,creditScore:0,acountCreatedDate:date})
-    return sendResponse(res,200,"saveUser cretaed succesfully",saveUser,true)
-
-}catch(error){
-    return sendResponse(res, 500, error.message, null, false);
-}
 })
 
 // VERIFY OTP ROUTE :-
@@ -113,13 +105,12 @@ router.post('/verify-otp',async(req,res) => {
 }
 })
 
-
+// LOGIN ROUTE :-
 router.post('/login',async(req,res)=>{
     try{
     let {email,password}=req.body;
     if(!email || !password){
         return sendResponse(res,400,"please fill the email and password fields ",null,false)
-
     }
     const db = req.app.locals.db; 
     const User = db.collection('User');
@@ -127,22 +118,20 @@ router.post('/login',async(req,res)=>{
     if(!findEmail){
         return sendResponse(res,400,"Invalid email",null,false)
     }
-
-    
-      
+    // COMPRE THE PASSWORD USING BCRYPT :-
     let passwordCompare = await bcrypt.compare(password, findEmail.password);
     console.log(password)
     console.log(findEmail.password)
-    
     if (!passwordCompare) {
         return sendResponse(res,400,"Invalid password",null,false)
       }
+      // AASIGN THE JWT AUTH TOKEN :-
     const JWT_SECRET = "anshul";
       const userData= {
         userId:findEmail._id ,
         email:email
       }
-      console.log(userData.email)
+      // SEND EMIAL AND USERID IN JWT TOKEN
       const jwtToken = jwt.sign(userData, JWT_SECRET, { expiresIn: '4h' });
       return sendResponse(res,200,"user login succesfully",jwtToken,true)
     }catch(error){
