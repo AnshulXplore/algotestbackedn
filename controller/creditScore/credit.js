@@ -29,7 +29,7 @@ router.post('/reduceCredit',fetchUser,async(req,res)=>{
         }
         // FIND HOW MANY STRATGEY IN GIVEN BUCKET:-
         let creditScore=findBucket.strategyArray.length;
-
+        // FIND USER:-
         let finduser=await User.findOne({_id:new ObjectId(userId)})
         if(!finduser){
             return sendResponse(res,400,"user not found",null,false)
@@ -114,7 +114,6 @@ router.post('/reduceCredit',fetchUser,async(req,res)=>{
         })
         return sendResponse(res,200,"succefully",reduceCredit,true)
     }
-
     // IF INVALID TYPE
     else{
         return sendResponse(res, 400,"please enter valid type", null, false);

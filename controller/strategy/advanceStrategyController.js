@@ -3,9 +3,9 @@ const router = express.Router();
 const sendResponse=require('../helper/helper')
 const checkLegsValidation=require('../conditions/checkadvanceleg');
 const fetchUser=require('../../middleware/fetchUser')
-
+const creditChecker=require('../../middleware/creditChecker')
 //1:- CREATE THE ADVANCE STRATEGY ROUTE :-
-router.post("/advancestrategy",fetchUser,async (req, res) => {
+router.post("/advancestrategy",fetchUser,creditChecker,async (req, res) => {
     try{
     let userId=req.userData.userId;
 
@@ -39,7 +39,7 @@ router.post("/advancestrategy",fetchUser,async (req, res) => {
 });
 
 // 2:- UPDATE THE ADVANCE STRATEGY ROUTE :-
-router.put('/updateadvancestrategy',fetchUser,async (req, res) => {
+router.put('/updateadvancestrategy',fetchUser,creditChecker,async (req, res) => {
     try {
         let userId=req.userData.userId;
         const db = req.app.locals.db;
@@ -141,7 +141,7 @@ router.post('/getalladvancestrategy',fetchUser,async(req,res)=>{
     }
 })
 // 5:- DELETE ADVANCE STARTEGY ROUTE:-
-router.delete('/deleteadvancestrategy',fetchUser,async(req,res)=>{
+router.delete('/deleteadvancestrategy',fetchUser,creditChecker,async(req,res)=>{
     try{
         let userId=req.userData.userId;
     const db = req.app.locals.db; 

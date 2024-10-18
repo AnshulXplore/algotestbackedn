@@ -7,9 +7,10 @@ const sendResponse = require("../helper/helper"); // THIS IS A HELPER FUNCTION F
 const advance=require('../../schema/advanceStartegyBuilder');
 const checkLegsValidation=require('../conditions/checksimpleleg')
 const fetchUser=require('../../middleware/fetchUser')
+const creditChecker=require('../../middleware/creditChecker')
 
 // 1:- CREATE STRATEGY ROUTE :-
-router.post("/createSimpleStrategy",fetchUser, async (req, res) => {
+router.post("/createSimpleStrategy",fetchUser,creditChecker,async (req, res) => {
   try{
     let userId=req.userData.userId;
 
@@ -40,7 +41,7 @@ router.post("/createSimpleStrategy",fetchUser, async (req, res) => {
 });
 
 //2:-UPDATE STRATEGY ROUTE :-
-router.put("/updateSimpleStrategy",fetchUser,async (req, res) => {
+router.put("/updateSimpleStrategy",fetchUser,creditChecker,async (req, res) => {
   try {
     let userId=req.userData.userId;
 
@@ -101,7 +102,7 @@ router.put("/updateSimpleStrategy",fetchUser,async (req, res) => {
 });
 
 //3:-DELETE STRATEGY ROUTE:-
-router.delete("/deleteSimpleStrategy",fetchUser,async (req, res) => {
+router.delete("/deleteSimpleStrategy",fetchUser,creditChecker,async (req, res) => {
   try {
     let userId=req.userData.userId;
     const db = req.app.locals.db; 

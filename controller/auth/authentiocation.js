@@ -132,7 +132,7 @@ router.post('/login',async(req,res)=>{
         email:email
       }
       // SEND EMIAL AND USERID IN JWT TOKEN
-      const jwtToken = jwt.sign(userData, JWT_SECRET, { expiresIn: '4h' });
+      const jwtToken = jwt.sign(userData, JWT_SECRET, { expiresIn: '10d' });
       return sendResponse(res,200,"user login succesfully",jwtToken,true)
     }catch(error){
         return sendResponse(res,500,"Internal server error",error.message,false)

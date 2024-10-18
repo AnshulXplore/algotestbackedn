@@ -4,9 +4,10 @@ const router = express.Router();
 const sendResponse = require('../helper/helper');
 const {  ObjectId } = require('mongodb');
 const fetchUser=require('../../middleware/fetchUser')
+const creditChecker=require('../../middleware/creditChecker')
 
 //1:- CREATE THE BUCKET ROUTE :-
-router.post("/createBucket",fetchUser, async (req, res) => {
+router.post("/createBucket",fetchUser,creditChecker,async (req, res) => {
     try {
         let userId=req.userData.userId;
         function getDates() {
@@ -85,7 +86,7 @@ router.post("/createBucket",fetchUser, async (req, res) => {
 });
 
 // 2:- UPDATE THE BUCKET ROUTES:-
-router.put('/updateBucket',fetchUser,async (req, res) => {
+router.put('/updateBucket',fetchUser,creditChecker,async (req, res) => {
     try {
         let userId=req.userData.userId;
         const db = req.app.locals.db;
@@ -115,7 +116,7 @@ router.put('/updateBucket',fetchUser,async (req, res) => {
 });
 
 //3:- DELETE BUCKET ROUTE :-
-router.delete('/deleteBucket',fetchUser,async(req,res) => {
+router.delete('/deleteBucket',fetchUser,creditChecker,async(req,res) => {
     try{
         let userId=req.userData.userId;
         const db = req.app.locals.db; 
