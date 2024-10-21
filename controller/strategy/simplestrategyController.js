@@ -1,166 +1,145 @@
-const Simplestrategy = require("../../schema/strategyBuilder"); // STRATEGY SCHEMA.
-const Legs = require("../../schema/legBuilder"); // LEGS SCHEMA.
-const mongoose = require("mongoose");
-const express = require("express");
-const router = express.Router();
-const sendResponse = require("../helper/helper"); // THIS IS A HELPER FUNCTION FOR RETURN A RESPONSE AND ERROR.
-const advance=require('../../schema/advanceStartegyBuilder');
-const checkLegsValidation=require('../conditions/checksimpleleg')
-const fetchUser=require('../../middleware/fetchUser')
-const creditChecker=require('../../middleware/creditChecker')
-
-// 1:- CREATE STRATEGY ROUTE :-
-router.post("/createSimpleStrategy",fetchUser,creditChecker,async (req, res) => {
-  try{
-    let userId=req.userData.userId;
-
-    const db = req.app.locals.db; 
-    const collection = db.collection('simpleStrategy'); 
+// strategyController.js
+const sendResponse = require("../helper/helper");
+const checkLegsValidation = require("../conditions/checksimpleleg");
+// 1:- CREATE sTRATEGY ROUTE:-
+exports.createSimpleStrategy = async (req, res) => {
+  try {
+    let userId = req.userData.userId;
+    const db = req.app.locals.db;
+    const collection = db.collection("simpleStrategy");
     const strategy = req.body;
-    
+
     const { isValid, message } = checkLegsValidation(strategy);
-    if(!isValid) return sendResponse(res, 400, message, null, false);
+    if (!isValid) return sendResponse(res, 400, message, null, false);
 
-    // find strategy for avoid duplicate strategy name.
-    let strategyName=strategy.strategyName;
-    const findStartegy = await collection.findOne({strategyName:strategyName,user:userId});
+    const strategyName = strategy.strategyName;
+    const findStrategy = await collection.findOne({ strategyName, user: userId });
 
-    if(findStartegy){
-        return sendResponse(res,400,"please select a unique name",null,false);
+    if (findStrategy) {
+      return sendResponse(res, 400, "Please select a unique name", null, false);
     }
-    
-    // enter more fields from backend:-
-    strategy.user=userId;
-    strategy.backtest=false;
-     const result = await collection.insertOne(strategy); 
-     return sendResponse(res,200,"sucess",result,true)
-    }catch(error){
-        return sendResponse(res,500,error.message,null,false)
 
-    }
-});
-
-//2:-UPDATE STRATEGY ROUTE :-
-router.put("/updateSimpleStrategy",fetchUser,creditChecker,async (req, res) => {
-  try {
-    let userId=req.userData.userId;
-
-    const db = req.app.locals.db; 
-    const collection = db.collection('simpleStrategy'); 
-    let strategy=req.body;
-    const { isValid, message } = checkLegsValidation(strategy);
-        if (!isValid) return sendResponse(res, 400, message, null, false);
-        const existingStrategy = await collection.findOne({ strategyName: strategy.strategyName,user:userId});
-
-        if (!existingStrategy) {
-            return sendResponse(res, 404, "Strategy not found", null, false);
-        }
-
-        const fieldsToSet = {};
-        const fieldsToUnset = {};
-
-        for (const key in strategy) {
-            if (key in existingStrategy) {
-                fieldsToSet[key] = strategy[key];
-                // console.log("addd1")
-            }
-            else{
-                fieldsToSet[key] = strategy[key];
-                console.log("addelse")
-            }
-        }
-
-        for (const key in existingStrategy) {
-            if (!(key in strategy) && key !== '_id' && key !=='user' && key !== 'backtest') { // Ignore these all field
-                fieldsToUnset[key] = "";
-                console.log("remove")
-            }
-        }
-
-        const updateQuery = {};
-        if (Object.keys(fieldsToSet).length > 0) updateQuery.$set = fieldsToSet;
-        if (Object.keys(fieldsToUnset).length > 0) updateQuery.$unset = fieldsToUnset;
-
-        // console.log("Update Query:", updateQuery);
-        if (Object.keys(updateQuery).length === 0) {
-            return sendResponse(res, 400, "Nothing to update", null, false);
-        }
-
-        const result = await collection.updateOne(
-            { strategyName: strategy.strategyName,user:userId },
-            updateQuery
-        );
-
-        if (result.modifiedCount === 0) {
-            return sendResponse(res, 400, "No data updated. Provide correct details.", null, false);
-        }
-
-        return sendResponse(res, 200, "Success", result, true);
-  }catch(error){
+    strategy.user = userId;
+    strategy.backtest = false;
+    const result = await collection.insertOne(strategy);
+    return sendResponse(res, 200, "Success", result, true);
+  } catch (error) {
     return sendResponse(res, 500, error.message, null, false);
   }
-});
-
-//3:-DELETE STRATEGY ROUTE:-
-router.delete("/deleteSimpleStrategy",fetchUser,creditChecker,async (req, res) => {
+};
+// 2:- UPDATE sTRATEGY ROUTE:-
+exports.updateSimpleStrategy = async (req, res) => {
   try {
-    let userId=req.userData.userId;
-    const db = req.app.locals.db; 
-    const collection = db.collection('simpleStrategy'); 
-    let {strategyName}= req.body;
-    //take by jwttoken
-    
+    let userId = req.userData.userId;
+    const db = req.app.locals.db;
+    const collection = db.collection("simpleStrategy");
+    const strategy = req.body;
+
+    const { isValid, message } = checkLegsValidation(strategy);
+    if (!isValid) return sendResponse(res, 400, message, null, false);
+
+    const existingStrategy = await collection.findOne({
+      strategyName: strategy.strategyName,
+      user: userId,
+    });
+
+    if (!existingStrategy) {
+      return sendResponse(res, 404, "Strategy not found", null, false);
+    }
+
+    const fieldsToSet = {};
+    const fieldsToUnset = {};
+
+    for (const key in strategy) {
+      fieldsToSet[key] = strategy[key];
+    }
+
+    for (const key in existingStrategy) {
+      if (!(key in strategy) && !["_id", "user", "backtest"].includes(key)) {
+        fieldsToUnset[key] = "";
+      }
+    }
+
+    const updateQuery = {};
+    if (Object.keys(fieldsToSet).length > 0) updateQuery.$set = fieldsToSet;
+    if (Object.keys(fieldsToUnset).length > 0) updateQuery.$unset = fieldsToUnset;
+
+    if (Object.keys(updateQuery).length === 0) {
+      return sendResponse(res, 400, "Nothing to update", null, false);
+    }
+
+    const result = await collection.updateOne(
+      { strategyName: strategy.strategyName, user: userId },
+      updateQuery
+    );
+
+    if (result.modifiedCount === 0) {
+      return sendResponse(res, 400, "No data updated. Provide correct details.", null, false);
+    }
+
+    return sendResponse(res, 200, "Success", result, true);
+  } catch (error) {
+    return sendResponse(res, 500, error.message, null, false);
+  }
+};
+// 3:- DELETE sTRATEGY ROUTE:-
+exports.deleteSimpleStrategy = async (req, res) => {
+  try {
+    let userId = req.userData.userId;
+    const db = req.app.locals.db;
+    const collection = db.collection("simpleStrategy");
+    const { strategyName } = req.body;
 
     if (!strategyName) {
-      return sendResponse(res,400,"please Provide strategyname for delete the strategyName",null,false);
+      return sendResponse(res, 400, "Please provide a strategy name", null, false);
     }
 
-    let findStrategy = await collection.deleteOne({strategyName:strategyName,user:userId,});
-    console.log(findStrategy)
-    if (findStrategy.deletedCount==0) {
-      return sendResponse(res,404,"provided Strategy Not found! something went wrong!",false,false);
+    const findStrategy = await collection.deleteOne({ strategyName, user: userId });
+    if (findStrategy.deletedCount === 0) {
+      return sendResponse(res, 404, "Strategy not found", null, false);
     }
 
-    return sendResponse(res,200,"Strategy deleted succesfully",findStrategy,true);
+    return sendResponse(res, 200, "Strategy deleted successfully", findStrategy, true);
   } catch (error) {
     return sendResponse(res, 500, error.message, null, false);
   }
-});
-
-// 4:- GET ALL STRATEGY OF A PARTICULAR USER:-
-router.get("/getSimpleStrategy",fetchUser,async (req, res) => {
+};
+// 4:- GETALL sTRATEGY ROUTE:-
+exports.getSimpleStrategies = async (req, res) => {
   try {
-    let userId=req.userData.userId;
-    const db = req.app.locals.db; 
-    const collection = db.collection('simpleStrategy'); 
-    let findAllStrategy = await collection.find({ user:userId }).toArray();
-    if (!findAllStrategy) {
-      return sendResponse(res, 400, "No Strategy Found", null, false);
+    let userId = req.userData.userId;
+    const db = req.app.locals.db;
+    const collection = db.collection("simpleStrategy");
+    const strategies = await collection.find({ user: userId }).toArray();
+
+    if (!strategies.length) {
+      return sendResponse(res, 400, "No strategies found", null, false);
     }
-    return sendResponse(res,200,"find all strategy succesfully",findAllStrategy,true);
+
+    return sendResponse(res, 200, "Strategies retrieved successfully", strategies, true);
   } catch (error) {
     return sendResponse(res, 500, error.message, null, false);
   }
-});
-
-// 5:- FIND A SINGLE STRATEGY:-
-router.post("/getOneSimpleStrategy",fetchUser, async (req, res) => {
+};
+// 5:- GET ONE SIMPLE STRATEGY ROUTE:-
+exports.getOneSimpleStrategy = async (req, res) => {
   try {
-    let userId=req.userData.userId;
-    const db = req.app.locals.db; 
-    const collection = db.collection('simpleStrategy'); 
-    let { strategyName } = req.body;
+    let userId = req.userData.userId;
+    const db = req.app.locals.db;
+    const collection = db.collection("simpleStrategy");
+    const { strategyName } = req.body;
+
     if (!strategyName) {
-      return sendResponse(res, 400, "strategyName is required", null, false);
+      return sendResponse(res, 400, "Strategy name is required", null, false);
     }
 
-    let findOneStrategy = await collection.findOne({strategyName: strategyName,user:userId,});
-    if (!findOneStrategy) {
-      return sendResponse(res, 400, "No Strategy Found", null, false);
+    const strategy = await collection.findOne({ strategyName, user: userId });
+    if (!strategy) {
+      return sendResponse(res, 400, "No strategy found", null, false);
     }
-    return sendResponse(res,200,"find one strategy succesfully",findOneStrategy,true);
+
+    return sendResponse(res, 200, "Strategy retrieved successfully", strategy, true);
   } catch (error) {
     return sendResponse(res, 500, error.message, null, false);
   }
-});
-module.exports = router;
+};
