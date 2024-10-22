@@ -1,6 +1,7 @@
 // strategyController.js
 const sendResponse = require("../helper/helper");
 const checkLegsValidation = require("../conditions/checksimpleleg");
+const { ObjectId } = require("mongodb");
 // 1:- CREATE sTRATEGY ROUTE:-
 exports.createSimpleStrategy = async (req, res) => {
   try {
@@ -155,8 +156,15 @@ exports.changePrivacy=async(req,res)=>{
           return sendResponse(res,400,"Missing required fields in body",null,false);
       }
       let userId=req.userData.userId;
+       
       const db = req.app.locals.db;
       const Simple = db.collection("simpleStrategy");
+      const SharedStrategy = db.collection('SharedStrategy'); // Shared strategy collection
+      const User = db.collection('User'); // Shared strategy collection
+      let findUser=await User.findOne({_id:new ObjectId(userId)})
+      if(!findUser){
+        return sendResponse(res,400,"User not found",null,false);
+      }
       let findStrategy=await Simple.findOne({strategyName:strategyName,user:userId})
       if(!findStrategy){
           return sendResponse(res,400,"Strategy not found",null,false);
@@ -169,13 +177,24 @@ exports.changePrivacy=async(req,res)=>{
       let update=await Simple.updateOne({strategyName:strategyName,user:userId},
           {$set:{privacy:"PUBLIC"}}
       )
-      return sendResponse(res,200,"strategy set public succesfully",update,true)
+      let data={};
+      data.strategy=findStrategy;
+      data.likes=0;
+      data.comments=[];
+      data.status="AllUSer";
+      data.user=userId;
+      data.from=findUser.Name;
+      data.strategyType="simple"
+      data.strategyName=strategyName
+      let saveData=await SharedStrategy.insertOne(data)
+      return sendResponse(res,200,"strategy set public succesfully",{update,saveData},true)
   }
   else{
       let update=await Simple.updateOne({strategyName:strategyName,user:userId},
           {$set:{privacy:"PRIVATE"}}
       )
-      return sendResponse(res,200,"strategy set private succesfully",update,true)
+      let deletefrompublic=await SharedStrategy.deleteOne({user:userId,strategyName:strategyName,strategyType:"simple"})
+      return sendResponse(res,200,"strategy set private succesfully",{update,deletefrompublic},true)
   }
   }catch(error){
       return sendResponse(res,500,error.message,null,false)

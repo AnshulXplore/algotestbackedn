@@ -4,6 +4,7 @@ const sendResponse=require('../helper/helper')
 const checkLegsValidation=require('../conditions/checkadvanceleg');
 const fetchUser=require('../../middleware/fetchUser')
 const creditChecker=require('../../middleware/creditChecker')
+const { ObjectId } = require("mongodb");
 //1:- CREATE THE ADVANCE STRATEGY ROUTE :-
 router.post("/advancestrategy",fetchUser,creditChecker,async (req, res) => {
     try{
@@ -171,7 +172,13 @@ router.post('/changeAdvanceStrategyPrivacy',fetchUser,creditChecker,async(req,re
         }
         let userId=req.userData.userId;
         const db = req.app.locals.db; 
-        const Advance = db.collection('advancestrategy'); 
+        const Advance = db.collection('advancestrategy');
+        const User = db.collection('User'); // Shared strategy collection
+        const SharedStrategy = db.collection('SharedStrategy'); // Shared strategy collection
+        let findUser=await User.findOne({_id:new ObjectId(userId)})
+        if(!findUser){
+            return sendResponse(res,400,"User not found",null,false);
+        } 
         let findStrategy=await Advance.findOne({strategyName:strategyName,user:userId})
         if(!findStrategy){
             return sendResponse(res,400,"Strategy not found",null,false);
@@ -184,13 +191,24 @@ router.post('/changeAdvanceStrategyPrivacy',fetchUser,creditChecker,async(req,re
         let update=await Advance.updateOne({strategyName:strategyName,user:userId},
             {$set:{privacy:"PUBLIC"}}
         )
-        return sendResponse(res,200,"strategy set public succesfully",update,true)
+      let data={};
+      data.strategy=findStrategy;
+      data.likes=0;
+      data.comments=[];
+      data.status="AllUSer";
+      data.user=userId;
+      data.from=findUser.Name;
+      data.strategyType="advance"
+      data.strategyName=strategyName
+        let saveData=await SharedStrategy.insertOne(data)
+        return sendResponse(res,200,"strategy set public succesfully",{update,saveData},true)
     }
     else{
         let update=await Advance.updateOne({strategyName:strategyName,user:userId},
             {$set:{privacy:"PRIVATE"}}
         )
-        return sendResponse(res,200,"strategy set private succesfully",update,true)
+        let deletefrompublic=await SharedStrategy.deleteOne({user:userId,strategyName:strategyName,strategyType:"advance"})
+        return sendResponse(res,200,"strategy set private succesfully",{update,deletefrompublic},true)
     }
     }catch(error){
         return sendResponse(res,500,error.message,null,false)
