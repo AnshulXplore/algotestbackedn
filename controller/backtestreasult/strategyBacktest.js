@@ -56,4 +56,39 @@ router.post('/compareBacktest',fetchUser,creditChecker,async(req,res) => {
 }
 })
 
+// GET SPECIFIC STARTEGY BACKTEST REASULT ROUTE :-
+router.post('/getbackTest',fetchUser,async(req,res) => {
+    try{
+      let {strategyName,strategyType}=req.body
+      if(!strategyName || !strategyType){
+        return sendResponse(res,500,"missing required fields in body",null,false)
+      }
+      let userId=req.userData.userId;
+      const db = req.app.locals.db; 
+      const Backtest = db.collection('backtestreasult'); 
+      const findBacktest=await Backtest.findOne({strategyName:strategyName,strategyType:strategyType,user:userId})
+      if(!findBacktest){
+        return sendResponse(res,500,"backtests not found",null,false)
+      }
+      return sendResponse(res,500,"backtests reasult succesfully found",findBacktest,true)
+}catch (error) {
+        return sendResponse(res,500,error.message,null,false)
+    }
+})
 module.exports=router;
+
+// GET ALL BACKTEST REASULT OF A SPECIFIC USER:-
+router.post('/getAllbackTest',fetchUser,async(req,res) => {
+    try{
+      let userId=req.userData.userId;
+      const db = req.app.locals.db; 
+      const Backtest = db.collection('backtestreasult'); 
+      const findBacktest=await Backtest.find({user:userId}).toArray();
+      if(findBacktest.length<=0){
+        return sendResponse(res,500,"backtests not founds",null,false)
+      }
+      return sendResponse(res,500,"backtests reasult succesfully found",findBacktest,true)
+}catch (error) {
+        return sendResponse(res,500,error.message,null,false)
+    }
+})

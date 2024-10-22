@@ -139,6 +139,7 @@ router.delete('/deleteBucket',fetchUser,creditChecker,async(req,res) => {
 // 4:- GET ALL BUCKETS ROUTE :-
 router.post('/getBucket',fetchUser,async(req,res) => {
     try {
+        
         let userId=req.userData.userId;
         const db = req.app.locals.db; 
         const Bucket = db.collection('bucket');
@@ -152,4 +153,5 @@ router.post('/getBucket',fetchUser,async(req,res) => {
         return sendResponse(res, 500, error.message, null, false);
     }
 })
+
 module.exports = router;  // Ensure you are exporting the router
