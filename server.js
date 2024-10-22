@@ -9,6 +9,7 @@ const auth=require('./controller/auth/authentiocation')
 const backtestReasult=require('./controller/backtestreasult/strategyBacktest')
 const reduceCredit=require('./controller/creditScore/credit')
 const creditHistory=require('./controller/creditScore/creditHistory')
+const shareStrategy=require('./controller/strategy/shareStrategy')
 
 app.use((err, req, res, next) => {
     console.error(err.stack); 
@@ -32,6 +33,7 @@ app.use((err, req, res, next) => {
         app.use('/api',backtestReasult) // BACKTEST ROUTES
         app.use('/api',reduceCredit) // REDUCE THE CREDIT SCPRE ROUTE
         app.use('/api',creditHistory) // SAVE THE PAYMENT HISTORY AFTER UPDATE THE CREDIT SCORE ROUTE
+        app.use('/api',shareStrategy)
 
         app.listen(3000, () => {
             console.log("Server started successfully on port 3000");

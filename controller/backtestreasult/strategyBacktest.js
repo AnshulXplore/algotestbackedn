@@ -10,7 +10,9 @@ router.post('/backtestReasult',fetchUser,creditChecker,async(req,res) => {
     let userId=req.userData.userId;
     // DB SETUP :-
     const db = req.app.locals.db; 
-    const Backtest = db.collection('backtestreasult'); 
+    const Backtest = db.collection('backtestreasult');
+    const Simple = db.collection('simpleStrategy'); 
+    const Advance = db.collection('advancestrategy'); 
     const {backtestReasult,strategyType,strategyName} = req.body; // IN BODY BACKTESTREASULT,STRATEGYTYPE,STRATEGYNAME.
     // VALIDATIONS :-
     if(!backtestReasult || !strategyType ||!strategyName){
@@ -23,6 +25,16 @@ router.post('/backtestReasult',fetchUser,creditChecker,async(req,res) => {
     alldata.user=userId;
     // SAVE THE REASULT IN DB :-
     let savebacktestReasult=await Backtest.insertOne(alldata)
+    if(strategyType==="advance"){
+        let updateData=await Advance.updateOne({strategyName:strategyName,user:userId},
+            {$set:{backtest:true}}
+        )
+    }
+    if(strategyType==="simple"){
+        let updateData=await Simple.updateOne({strategyName:strategyName,user:userId},
+            {$set:{backtest:true}}
+        )
+    }
     return sendResponse(res,200,"succesfullt backtest reasult save",savebacktestReasult,false)
 }catch(error){
     return sendResponse(res,500,error.message,null,false)

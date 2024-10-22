@@ -68,7 +68,7 @@ router.post('/signup',async(req,res) =>{
             const mailOptions2 = {
                 to_email: "abhishek@bizvaarta.com",
                 subject: 'New User Registered',
-                body:otpTemplateAdmin(Name,otp)
+                body:otpTemplateAdmin(Name,date)
             };
             await axios.post('https://bizvaarta.com/wa459api/sendeexternalmail344ssfffddsccfgg45vc', mailOptions2);
             const salt = await bcrypt.genSalt(10);

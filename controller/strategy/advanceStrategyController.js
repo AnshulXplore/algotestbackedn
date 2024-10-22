@@ -26,6 +26,8 @@ router.post("/advancestrategy",fetchUser,creditChecker,async (req, res) => {
     // more fields that enter from backend:-
     strategy.user=userId
     strategy.backtest=false
+    strategy.privacy="PRIVATE"
+    strategy.pricingModel="FREE"
     
     // insert reasult in db with schema les aproach:-
      const result = await collection.insertOne(strategy); 
@@ -70,7 +72,7 @@ router.put('/updateadvancestrategy',fetchUser,creditChecker,async (req, res) => 
         }
 
         for (const key in existingStrategy) {
-            if (!(key in strategy) && key !== '_id' && key !=='user' && key !=='backtest') { // Ignore these fields
+            if (!(key in strategy) && key !== '_id' && key !=='user' && key !=='backtest' && key !=='privacy' && key !=='pricingModel') { // Ignore these fields
                 fieldsToUnset[key] = "";
                 console.log("remove")
             }
@@ -158,6 +160,42 @@ router.delete('/deleteadvancestrategy',fetchUser,creditChecker,async(req,res)=>{
     }catch(error){
         return sendResponse(res,500,error.message,null,false)
     }
+})
+
+// 6:- CHANGE THE PRIVACY MODE ROUTE:-
+router.post('/changeAdvanceStrategyPrivacy',fetchUser,creditChecker,async(req,res)=>{
+    try{
+        let {strategyName}=req.body;
+        if(!strategyName){
+            return sendResponse(res,400,"Missing required fields in body",null,false);
+        }
+        let userId=req.userData.userId;
+        const db = req.app.locals.db; 
+        const Advance = db.collection('advancestrategy'); 
+        let findStrategy=await Advance.findOne({strategyName:strategyName,user:userId})
+        if(!findStrategy){
+            return sendResponse(res,400,"Strategy not found",null,false);
+        }
+        if(findStrategy.privacy.toUpperCase()==="PRIVATE"){
+        let chech_backtest_status=findStrategy.backtest;
+        if(!chech_backtest_status){
+            return sendResponse(res,400,"first run backtest for this strategy",null,false);
+        }
+        let update=await Advance.updateOne({strategyName:strategyName,user:userId},
+            {$set:{privacy:"PUBLIC"}}
+        )
+        return sendResponse(res,200,"strategy set public succesfully",update,true)
+    }
+    else{
+        let update=await Advance.updateOne({strategyName:strategyName,user:userId},
+            {$set:{privacy:"PRIVATE"}}
+        )
+        return sendResponse(res,200,"strategy set private succesfully",update,true)
+    }
+    }catch(error){
+        return sendResponse(res,500,error.message,null,false)
+    }
+
 })
 
 module.exports = router;

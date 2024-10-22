@@ -18,9 +18,12 @@ exports.createSimpleStrategy = async (req, res) => {
     if (findStrategy) {
       return sendResponse(res, 400, "Please select a unique name", null, false);
     }
-
+    // some aditionals fields:-
     strategy.user = userId;
     strategy.backtest = false;
+    strategy.privacy="PRIVATE";
+    strategy.pricingModel="FREE"
+
     const result = await collection.insertOne(strategy);
     return sendResponse(res, 200, "Success", result, true);
   } catch (error) {
@@ -55,7 +58,7 @@ exports.updateSimpleStrategy = async (req, res) => {
     }
 
     for (const key in existingStrategy) {
-      if (!(key in strategy) && !["_id", "user", "backtest"].includes(key)) {
+      if (!(key in strategy) && !["_id", "user", "backtest","privacy","pricingModel"].includes(key)) {
         fieldsToUnset[key] = "";
       }
     }
@@ -143,3 +146,40 @@ exports.getOneSimpleStrategy = async (req, res) => {
     return sendResponse(res, 500, error.message, null, false);
   }
 };
+
+// 6:- CHANGE THE PRIVACY MODE ROUTE:-
+exports.changePrivacy=async(req,res)=>{
+  try{
+      let {strategyName}=req.body;
+      if(!strategyName){
+          return sendResponse(res,400,"Missing required fields in body",null,false);
+      }
+      let userId=req.userData.userId;
+      const db = req.app.locals.db;
+      const Simple = db.collection("simpleStrategy");
+      let findStrategy=await Simple.findOne({strategyName:strategyName,user:userId})
+      if(!findStrategy){
+          return sendResponse(res,400,"Strategy not found",null,false);
+      }
+      if(findStrategy.privacy.toUpperCase()==="PRIVATE"){
+      let chech_backtest_status=findStrategy.backtest;
+      if(!chech_backtest_status){
+          return sendResponse(res,400,"first run backtest for this strategy",null,false);
+      }
+      let update=await Simple.updateOne({strategyName:strategyName,user:userId},
+          {$set:{privacy:"PUBLIC"}}
+      )
+      return sendResponse(res,200,"strategy set public succesfully",update,true)
+  }
+  else{
+      let update=await Simple.updateOne({strategyName:strategyName,user:userId},
+          {$set:{privacy:"PRIVATE"}}
+      )
+      return sendResponse(res,200,"strategy set private succesfully",update,true)
+  }
+  }catch(error){
+      return sendResponse(res,500,error.message,null,false)
+  }
+
+}
+
