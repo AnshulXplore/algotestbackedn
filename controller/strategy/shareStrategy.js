@@ -90,6 +90,7 @@ router.post('/shareStrategy', fetchUser, creditChecker, async (req, res) => {
         savedata.to = to;
         savedata.sendingTime = date;
         savedata.strategyType = strategyType;
+        savedata.status="specificUser"
         savedata.StrategyCode=uniqueString;
 
         // Insert shared strategy data into the collection
